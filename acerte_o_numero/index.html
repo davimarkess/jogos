@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Jogo: Adivinhe o Número</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e3f2fd;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 50px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        #game {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 300px;
+        }
+
+        input[type="number"] {
+            padding: 10px;
+            width: 100px;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #mensagem {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .timers {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-around;
+            color: #444;
+        }
+
+        .timers div {
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Adivinhe o Número</h1>
+
+    <div id="game">
+        <div class="timers">
+            <div id="timer">⏳ Tempo restante: 1min</div>
+            <div id="cronometro">⌛ Tempo decorrido: 0s</div>
+        </div>
+
+        <p>Escolha um número de 1 a 1000:</p>
+        <input type="number" id="palpite" min="1" max="1000">
+        <button onclick="verificarPalpite()">Tentar</button>
+        <p id="mensagem"></p>
+    </div>
+
+    <script>
+        const numeroSecreto = Math.floor(Math.random() * 1000) + 1;
+        let tempoRestante = 60;
+        let tempoDecorrido = 0;
+        let jogoFinalizado = false;
+        let jogoIniciado = false;
+        let intervaloRegressivo, intervaloCronometro;
+
+        const timerEl = document.getElementById("timer");
+        const cronometroEl = document.getElementById("cronometro");
+        const mensagemEl = document.getElementById("mensagem");
+        const inputPalpite = document.getElementById("palpite");
+
+        function iniciarTimers() {
+            intervaloRegressivo = setInterval(() => {
+                if (tempoRestante > 0 && !jogoFinalizado) {
+                    tempoRestante--;
+                    timerEl.textContent = `⏳ Tempo restante: ${tempoRestante}s`;
+                } else if (!jogoFinalizado) {
+                    finalizarJogo(false);
+                }
+            }, 1000);
+
+            intervaloCronometro = setInterval(() => {
+                if (!jogoFinalizado) {
+                    tempoDecorrido++;
+                    cronometroEl.textContent = `⌛ Tempo decorrido: ${tempoDecorrido}s`;
+                }
+            }, 1000);
+        }
+
+        function verificarPalpite() {
+            if (jogoFinalizado) return;
+
+            const palpite = parseInt(inputPalpite.value);
+
+            if (!jogoIniciado) {
+                jogoIniciado = true;
+                iniciarTimers();
+            }
+
+            if (isNaN(palpite) || palpite < 1 || palpite > 1000) {
+                mensagemEl.textContent = "Por favor, insira um número válido entre 1 e 1000.";
+                mensagemEl.style.color = "red";
+                return;
+            }
+
+            if (palpite === numeroSecreto) {
+                finalizarJogo(true);
+            } else if (palpite < numeroSecreto) {
+                mensagemEl.textContent = "O número é maior. Tente novamente.";
+                mensagemEl.style.color = "orange";
+            } else {
+                mensagemEl.textContent = "O número é menor. Tente novamente.";
+                mensagemEl.style.color = "orange";
+            }
+
+            inputPalpite.value = ""; // limpa campo após tentativa
+            inputPalpite.focus();    // mantém foco no input
+        }
+
+        function finalizarJogo(vitoria) {
+            jogoFinalizado = true;
+            clearInterval(intervaloRegressivo);
+            clearInterval(intervaloCronometro);
+
+            if (vitoria) {
+                mensagemEl.textContent = `🎉 Você acertou o número em ${tempoDecorrido} segundos!`;
+                mensagemEl.style.color = "green";
+            } else {
+                mensagemEl.textContent = `⏰ Tempo esgotado! O número era ${numeroSecreto}.`;
+                mensagemEl.style.color = "red";
+            }
+        }
+
+        // Suporte à tecla Enter para enviar palpite
+        inputPalpite.addEventListener("keydown", function(event) {
+            if (event.key === "Enter") {
+                verificarPalpite();
+            }
+        });
+    </script>
+
+</body>
+</html>
