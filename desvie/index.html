@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Desvie do Inimigo</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    canvas {
+      display: block;
+      background-color: #222;
+      margin: 30px auto;
+      border: 2px solid #fff;
+    }
+    body {
+      text-align: center;
+      font-family: sans-serif;
+      color: white;
+      background-color: #111;
+    }
+    h1 { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>⚠️ Desvie do Inimigo!</h1>
+  <p>Use W, A, S, D para se mover. Não encoste no inimigo vermelho!</p>
+  <canvas id="gameCanvas" width="500" height="400"></canvas>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const player = { x: 50, y: 50, size: 20, color: 'lime', speed: 3 };
+    const enemy = { x: 200, y: 150, size: 20, color: 'red', dx: 2, dy: 2 };
+    let keys = {};
+
+    document.addEventListener('keydown', (e) => keys[e.key.toLowerCase()] = true);
+    document.addEventListener('keyup', (e) => keys[e.key.toLowerCase()] = false);
+
+    function movePlayer() {
+      if (keys['w']) player.y -= player.speed;
+      if (keys['s']) player.y += player.speed;
+      if (keys['a']) player.x -= player.speed;
+      if (keys['d']) player.x += player.speed;
+
+      // Limites da tela
+      player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
+      player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
+    }
+
+    function moveEnemy() {
+      enemy.x += enemy.dx;
+      enemy.y += enemy.dy;
+
+      if (enemy.x <= 0 || enemy.x + enemy.size >= canvas.width) enemy.dx *= -1;
+      if (enemy.y <= 0 || enemy.y + enemy.size >= canvas.height) enemy.dy *= -1;
+    }
+
+    function checkCollision() {
+      return (
+        player.x < enemy.x + enemy.size &&
+        player.x + player.size > enemy.x &&
+        player.y < enemy.y + enemy.size &&
+        player.y + player.size > enemy.y
+      );
+    }
+
+    function drawBox(obj) {
+      ctx.fillStyle = obj.color;
+      ctx.fillRect(obj.x, obj.y, obj.size, obj.size);
+    }
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      movePlayer();
+      moveEnemy();
+
+      drawBox(player);
+      drawBox(enemy);
+
+      if (checkCollision()) {
+        alert("💥 Você foi pego!");
+        player.x = 50;
+        player.y = 50;
+        enemy.x = 200;
+        enemy.y = 150;
+      }
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    gameLoop();
+  </script>
+</body>
+</html>
